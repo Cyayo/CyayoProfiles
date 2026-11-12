@@ -1,0 +1,19 @@
+# ==============================================================================
+# CyayoProfiles - Custom Placeholders (dibaca SeriaCore Placeholder Engine)
+# File: placeholder/cyayoprofiles.yml
+# Usage:
+#   %custom_cyayoprofiles_<key>%   atau   %custom_<key>%
+# Format sama dengan SeriaCore/placeholder/playerlevel.yml
+# ==============================================================================
+
+profile-slot-label:
+  type: "function"
+  function: "short-track"
+  input: "%cyayoprofiles_slot%"
+  tracks:
+    "==1": "Slot I"
+    "==2": "Slot II"
+    "==3": "Slot III"
+    "==4": "Slot IV"
+    "==5": "Slot V"
+    default: "No Slot"

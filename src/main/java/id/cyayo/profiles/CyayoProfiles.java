@@ -58,6 +58,7 @@ public class CyayoProfiles extends JavaPlugin {
 
         // 1. Save default configs
         saveDefaultConfig();
+        saveDefaultPlaceholders();
         loadMessagesConfig();
 
         // 2. Initialize Database & Storage
@@ -138,10 +139,32 @@ public class CyayoProfiles extends JavaPlugin {
         getLogger().info("CyayoProfiles has been safely disabled!");
     }
 
+    /** Salin placeholder/*.yml bawaan agar ikut dibaca SeriaCore Placeholder Engine. */
+    private void saveDefaultPlaceholders() {
+        File target = new File(getDataFolder(), "placeholder/cyayoprofiles.yml");
+        if (!target.exists()) {
+            saveResource("placeholder/cyayoprofiles.yml", false);
+        }
+    }
+
     public void loadMessagesConfig() {
-        messagesFile = new File(getDataFolder(), "messages.yml");
+        String language = getConfig().getString("settings.language", "messages_en.yml");
+        messagesFile = new File(getDataFolder(), language);
+        // Migrasi struktur lama: messages.yml -> messages_en.yml
+        File legacyMessages = new File(getDataFolder(), "messages.yml");
+        if (!messagesFile.exists() && legacyMessages.exists() && language.equals("messages_en.yml")) {
+            if (legacyMessages.renameTo(messagesFile)) {
+                getLogger().info("Migrated messages.yml to messages_en.yml");
+            }
+        }
         if (!messagesFile.exists()) {
-            saveResource("messages.yml", false);
+            if (getResource(language) != null) {
+                saveResource(language, false);
+            } else {
+                getLogger().warning("Language file " + language + " not found, falling back to messages_en.yml");
+                messagesFile = new File(getDataFolder(), "messages_en.yml");
+                if (!messagesFile.exists()) saveResource("messages_en.yml", false);
+            }
         }
         messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
     }

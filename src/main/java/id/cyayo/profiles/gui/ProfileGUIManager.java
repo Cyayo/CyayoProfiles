@@ -42,14 +42,23 @@ public class ProfileGUIManager {
     }
 
     public void loadConfigs() {
-        profilesGuiConfig = loadGuiFile("gui/profiles.yml");
-        classSelectGuiConfig = loadGuiFile("gui/class_select.yml");
-        gamemodeSelectGuiConfig = loadGuiFile("gui/gamemode_select.yml");
-        confirmDeleteGuiConfig = loadGuiFile("gui/confirm_delete.yml");
+        profilesGuiConfig = loadGuiFile("menus/profiles.yml");
+        classSelectGuiConfig = loadGuiFile("menus/class_select.yml");
+        gamemodeSelectGuiConfig = loadGuiFile("menus/gamemode_select.yml");
+        confirmDeleteGuiConfig = loadGuiFile("menus/confirm_delete.yml");
     }
 
     private FileConfiguration loadGuiFile(String path) {
         File file = new File(plugin.getDataFolder(), path);
+        // Migrasi struktur lama: gui/<nama>.yml -> menus/<nama>.yml
+        File legacy = new File(plugin.getDataFolder(), path.replaceFirst("^menus/", "gui/"));
+        if (!file.exists() && legacy.exists()) {
+            File parent = file.getParentFile();
+            if (parent != null) parent.mkdirs();
+            if (legacy.renameTo(file)) {
+                plugin.getLogger().info("Migrated " + legacy.getName() + " from gui/ to menus/");
+            }
+        }
         if (!file.exists()) {
             plugin.saveResource(path, false);
         }

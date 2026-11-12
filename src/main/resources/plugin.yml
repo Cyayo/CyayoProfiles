@@ -1,11 +1,14 @@
 name: CyayoProfiles
-version: '1.0.0'
+version: '${project.version}'
 main: id.cyayo.profiles.CyayoProfiles
 api-version: '1.21'
 author: Cyayo
 description: Wynncraft-style Multi-Character Class Profile System with SQL Storage, Challenge Gamemodes, and MMOItems Restriction
 
+depend: [SeriaCore]
+
 softdepend:
+  - SeriaPrefix
   - MMOItems
   - MythicLib
   - PlaceholderAPI

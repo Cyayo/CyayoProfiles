@@ -2,6 +2,10 @@
 #                           CyayoProfiles Config
 # ==============================================================================
 
+# Bahasa file pesan (messages_en.yml, dst.) di folder plugin
+settings:
+  language: "messages_en.yml"
+
 # Pengaturan Penyimpanan Database
 # Pilihan type: "SQLITE" atau "MYSQL"
 database:

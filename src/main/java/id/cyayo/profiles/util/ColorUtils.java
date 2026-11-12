@@ -3,6 +3,7 @@ package id.cyayo.profiles.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import id.seria.core.gui.menu.BaseSeriaMenu;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -35,9 +36,27 @@ public class ColorUtils {
     private static final Pattern HEX_TAG_PATTERN = Pattern.compile("&#([a-fA-F0-9]{6})");
     private static final Pattern LEGACY_HEX_PATTERN = Pattern.compile("[§&]x[§&]([0-9a-fA-F])[§&]([0-9a-fA-F])[§&]([0-9a-fA-F])[§&]([0-9a-fA-F])[§&]([0-9a-fA-F])[§&]([0-9a-fA-F])");
 
+    /**
+     * Resolve tag semantik Seria (<sc:prefix>, <sc:...>, %sc_*%) via SeriaCore/SeriaPrefix menjadi MiniMessage.
+     * Tanpa ini tag <sc:...> tidak dikenali MiniMessage dan hilang/tampil mentah.
+     */
+    private static String resolveSeriaTags(Player viewer, String text) {
+        if (text.indexOf('<') == -1 && text.indexOf('%') == -1) return text;
+        try {
+            return BaseSeriaMenu.formatSemanticColorTags(viewer, text);
+        } catch (Throwable t) {
+            return text;
+        }
+    }
+
     public static Component parse(String text) {
+        return parse(null, text);
+    }
+
+    public static Component parse(Player viewer, String text) {
         if (text == null || text.isEmpty()) return Component.empty();
 
+        text = resolveSeriaTags(viewer, text);
         String processed = text;
 
         Matcher legacyHexMatcher = LEGACY_HEX_PATTERN.matcher(processed);
@@ -94,16 +113,20 @@ public class ColorUtils {
     }
 
     public static String color(String text) {
+        return color(null, text);
+    }
+
+    public static String color(Player viewer, String text) {
         if (text == null || text.isEmpty()) return "";
         if (text.contains("\n")) {
             String[] lines = text.split("\n", -1);
             for (int i = 0; i < lines.length; i++) {
-                lines[i] = color(lines[i]);
+                lines[i] = color(viewer, lines[i]);
             }
             return String.join("\n", lines);
         }
         try {
-            return SECTION_SERIALIZER.serialize(parse(text));
+            return SECTION_SERIALIZER.serialize(parse(viewer, text));
         } catch (Exception e) {
             return ChatColor.translateAlternateColorCodes('&', text);
         }
@@ -137,7 +160,7 @@ public class ColorUtils {
 
     public static void sendMessage(CommandSender sender, String message) {
         if (sender == null || isNone(message)) return;
-        String colored = color(message);
+        String colored = color(sender instanceof Player p ? p : null, message);
         sender.sendMessage(colored.trim().isEmpty() ? " " : colored);
     }
 
@@ -161,7 +184,7 @@ public class ColorUtils {
     public static void sendActionBar(Player player, String message) {
         if (player == null || isNoneOrEmpty(message)) return;
         try {
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(color(message)));
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(color(player, message)));
         } catch (Throwable ignored) {
         }
     }
@@ -171,8 +194,8 @@ public class ColorUtils {
         if (player == null) return;
         if (isNoneOrEmpty(titleText) && isNoneOrEmpty(subtitleText)) return;
 
-        String title = isNoneOrEmpty(titleText) ? "" : color(titleText);
-        String subtitle = isNoneOrEmpty(subtitleText) ? "" : color(subtitleText);
+        String title = isNoneOrEmpty(titleText) ? "" : color(player, titleText);
+        String subtitle = isNoneOrEmpty(subtitleText) ? "" : color(player, subtitleText);
 
         player.sendTitle(title, subtitle, fadeInTicks, stayTicks, fadeOutTicks);
     }
